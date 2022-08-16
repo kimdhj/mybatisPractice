@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:c="http://www.springframework.org/schema/c"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+	
+	<context:component-scan base-package="donghyunji.spring.web"></context:component-scan>
+	
+	<bean id="sessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="configLocation" value="classpath:mybatis-config.xml" />
+	</bean>
+	<bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg ref="sessionFactory" />
+	</bean>
+	
+	<!-- <bean id="userService" class="donghyunji.spring.web.user.impl.UserServiceImpl">
+		<property name="userDAO" ref="userDAO" />
+ 	</bean>
+ 	<bean id="userDAO" class="donghyunji.spring.web.user.impl.UserDAO"></bean> -->
+	
+ 	<aop:aspectj-autoproxy />
+	
+	<context:property-placeholder location="classpath:config/database.properties"/>
+	<!-- DataSource 등록 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="${jdbc.driver}"/>
+		<property name="url" value="${jdbc.url}"/>
+		<property name="username" value="${jdbc.username}"/>
+		<property name="password" value="${jdbc.password}"/>
+	</bean>
+	
+	<!-- 스프링 JDBC 설정 -->
+	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	
+	<!-- Transaction 설정 -->
+	<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+	<tx:advice id="txAdvice" transaction-manager="txManager">
+		<tx:attributes>
+			<tx:method name="get*" read-only="true"/>
+			<tx:method name="*"/>
+		</tx:attributes>
+	</tx:advice>
+	
+	<aop:config>
+		<aop:pointcut expression="execution(* donghyunji.spring.web..*(..))" id="txPointcut" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="txPointcut" />
+	</aop:config> 
+	
+
+	
+<!-- 
+
+	<context:component-scan base-package="donghyunji.spring.polymorphism"></context:component-scan>
+	
+	<bean id="sony" class="donghyunji.spring.polymorphism.SonySpeaker" />
+
+ -->	
+	
+	
+<!-- 
+	<bean id="collectionBean" class="donghyunji.spring.collection.CollectionBean">
+		<property name="addressList">
+			<props>
+				<prop key="홍길동">율도국</prop>
+				<prop key="손오공">화과산</prop>
+			</props>
+		</property>
+	</bean>
+ -->
+<!-- 
+<bean id="tv" class="donghyunji.spring.polymorphism.SamsungTV" >
+	<property name="speaker" ref="apple" />
+	<property name="price" value="3000000" />
+</bean>
+<bean id="sony" class="donghyunji.spring.polymorphism.SonySpeaker" />
+<bean id="apple" class="donghyunji.spring.polymorphism.AppleSpeaker" />
+<bean id="lgtv" class="donghyunji.spring.polymorphism.LgTV" lazy-init="true" />
+ -->
+</beans>
